@@ -1,0 +1,36 @@
+# This project has no build step and no dependencies. Anything below is either
+# a local accident or an editor artefact.
+
+# Dependencies (there should never be any — but never commit them if there are)
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Logs and debug output
+*.log
+npm-debug.log*
+
+# Editor and IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS cruft
+.DS_Store
+.DS_Store?
+Thumbs.db
+desktop.ini
+._*
+
+# Local scratch: generated PDFs, screenshots, exports
+/tmp/
+*.pdf
+*.png
+!docs/**/*.png
+
+# Environment
+.env
+.env.local

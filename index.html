@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Retirement &amp; Compound Interest Planner</title>
+<meta name="description" content="A plain-language retirement and compound-interest projection tool that shows inflation-adjusted results, not just headline numbers. Educational, not financial advice.">
+<meta name="color-scheme" content="light dark">
+<link rel="stylesheet" href="assets/styles.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23184f95'/%3E%3Ctext x='16' y='23' font-family='system-ui,sans-serif' font-size='19' font-weight='700' fill='white' text-anchor='middle'%3E%24%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+
+<a class="skip-link" href="#results">Skip to your results</a>
+
+<header class="site-header">
+  <div class="page">
+    <p class="brand">Numeraldo &middot; Financial Literacy Workshops</p>
+    <h1>Retirement &amp; Compound Interest Planner</h1>
+    <p class="tagline">
+      Work out what your savings could grow to &mdash; and, just as importantly,
+      what that money would actually buy once inflation has had its way with it.
+      Everything is worked out on your own device. Nothing you type is sent anywhere.
+    </p>
+
+    <div class="toolbar no-print" role="group" aria-label="Page settings">
+      <div class="toolbar-group">
+        <span class="toolbar-label" id="text-size-label">Text size</span>
+        <div role="group" aria-labelledby="text-size-label">
+          <button type="button" class="btn btn-sm text-size-btn is-a1" data-size="1" aria-pressed="false">A</button>
+          <button type="button" class="btn btn-sm text-size-btn is-a2" data-size="2" aria-pressed="true">A</button>
+          <button type="button" class="btn btn-sm text-size-btn is-a3" data-size="3" aria-pressed="false">A</button>
+          <button type="button" class="btn btn-sm text-size-btn is-a4" data-size="4" aria-pressed="false">A</button>
+        </div>
+        <span class="visually-hidden" aria-live="polite" id="text-size-status"></span>
+      </div>
+
+      <div class="toolbar-group">
+        <span class="toolbar-label" id="theme-label">Colours</span>
+        <button type="button" class="btn btn-sm" id="themeToggle" aria-labelledby="theme-label themeToggle">Light / dark</button>
+      </div>
+
+      <div class="toolbar-group">
+        <button type="button" class="btn btn-sm btn-primary" id="printBtn">Print this plan</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <!-- ============================ DISCLAIMER ============================ -->
+  <section class="disclaimer" aria-labelledby="disclaimer-heading">
+    <h2 id="disclaimer-heading">Please read this first</h2>
+    <p>
+      <strong>This is a teaching tool, not financial advice.</strong> It shows what
+      the arithmetic of compound interest does <em>if</em> the numbers you type in
+      turn out to be true. Nobody knows what investments will actually return, and
+      real returns arrive unevenly &mdash; good years and bad years, not the same
+      percentage every year. <strong>No figure on this page is a promise or a
+      guarantee.</strong>
+    </p>
+    <p>
+      It also leaves things out: taxes, fees, health costs, Social Security,
+      pensions, and the order in which good and bad years happen. Use it to
+      understand the <em>shape</em> of the problem, then talk to a qualified adviser
+      before making decisions.
+    </p>
+  </section>
+
+  <div class="layout">
+
+    <!-- ============================ INPUTS ============================ -->
+    <div>
+      <form class="card" id="planForm" novalidate>
+        <h2>Your numbers</h2>
+        <p class="card-note">Results update as you type. Every box has a starting
+          value you can change.</p>
+
+        <div class="errors" id="errors" role="alert" aria-live="assertive"></div>
+
+        <fieldset>
+          <legend>About you</legend>
+
+          <div class="field">
+            <label for="currentAge">Your age today</label>
+            <span class="hint" id="currentAge-hint">In whole years.</span>
+            <div class="input-wrap">
+              <input type="number" id="currentAge" name="currentAge" value="55"
+                     min="0" max="120" step="1" inputmode="numeric"
+                     aria-describedby="currentAge-hint">
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="retirementAge">Age you plan to retire</label>
+            <span class="hint" id="retirementAge-hint">If you are already retired,
+              put the same number as your age today.</span>
+            <div class="input-wrap">
+              <input type="number" id="retirementAge" name="retirementAge" value="67"
+                     min="0" max="120" step="1" inputmode="numeric"
+                     aria-describedby="retirementAge-hint">
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>What you are saving</legend>
+
+          <div class="field">
+            <label for="currentSavings">Money you have saved already</label>
+            <span class="hint" id="currentSavings-hint">The total in your retirement
+              accounts today.</span>
+            <div class="input-wrap">
+              <span class="input-affix prefix" aria-hidden="true">$</span>
+              <input type="number" id="currentSavings" name="currentSavings" value="25000"
+                     min="0" step="100" inputmode="decimal"
+                     aria-describedby="currentSavings-hint">
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="monthlyContribution">Amount you add each month</label>
+            <span class="hint" id="monthlyContribution-hint">Your own money only.
+              Employer money goes in the next box.</span>
+            <div class="input-wrap">
+              <span class="input-affix prefix" aria-hidden="true">$</span>
+              <input type="number" id="monthlyContribution" name="monthlyContribution" value="500"
+                     min="0" step="25" inputmode="decimal"
+                     aria-describedby="monthlyContribution-hint">
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="matchPercent">Employer match</label>
+            <span class="hint" id="matchPercent-hint">For every dollar you put in,
+              how many cents does your employer add? Enter 50 for a &ldquo;50&nbsp;cents
+              on the dollar&rdquo; match. Leave at 0 for a Roth or traditional IRA
+              &mdash; individual IRAs have no employer match.</span>
+            <div class="input-wrap">
+              <input type="number" id="matchPercent" name="matchPercent" value="0"
+                     min="0" max="300" step="5" inputmode="decimal" class="with-suffix"
+                     aria-describedby="matchPercent-hint">
+              <span class="input-affix suffix" aria-hidden="true">%</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="matchCapMonthly">Most your employer will add per month</label>
+            <span class="hint" id="matchCapMonthly-hint">Enter 0 if there is no cap,
+              or if there is no match.</span>
+            <div class="input-wrap">
+              <span class="input-affix prefix" aria-hidden="true">$</span>
+              <input type="number" id="matchCapMonthly" name="matchCapMonthly" value="0"
+                     min="0" step="25" inputmode="decimal"
+                     aria-describedby="matchCapMonthly-hint">
+            </div>
+          </div>
+
+          <div class="field check-row">
+            <input type="checkbox" id="escalate" name="escalate">
+            <label for="escalate">Raise the amount I add each year to keep up with
+              inflation<span class="hint" style="font-weight:400">If you leave this
+              unticked, your monthly amount stays the same in dollars &mdash; which
+              means it buys a little less every year.</span></label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Your assumptions</legend>
+
+          <div class="field">
+            <label for="annualReturn">Expected return each year, before retirement</label>
+            <span class="hint" id="annualReturn-hint">A single average figure. Real
+              markets do not behave like this &mdash; see the
+              &ldquo;what if the return is different&rdquo; table in your results.</span>
+            <div class="input-wrap">
+              <input type="number" id="annualReturn" name="annualReturn" value="6"
+                     min="-50" max="30" step="0.5" inputmode="decimal" class="with-suffix"
+                     aria-describedby="annualReturn-hint">
+              <span class="input-affix suffix" aria-hidden="true">%</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="annualInflation">Expected inflation each year</label>
+            <span class="hint" id="annualInflation-hint">How fast prices rise. This is
+              what turns a big future number into a smaller amount of actual
+              shopping.</span>
+            <div class="input-wrap">
+              <input type="number" id="annualInflation" name="annualInflation" value="2.5"
+                     min="-10" max="25" step="0.25" inputmode="decimal" class="with-suffix"
+                     aria-describedby="annualInflation-hint">
+              <span class="input-affix suffix" aria-hidden="true">%</span>
+            </div>
+          </div>
+
+          <fieldset class="field" style="margin-bottom:0">
+            <legend style="font-size:1rem;border:0;padding-bottom:0;margin-bottom:.2rem">
+              When in the month does your contribution land?
+            </legend>
+            <span class="hint" id="timing-hint">This changes the answer by roughly one
+              month of growth. End of month is the cautious choice and matches most
+              payroll deductions.</span>
+            <div class="radio-group" role="radiogroup" aria-describedby="timing-hint">
+              <div class="radio-row">
+                <input type="radio" id="timing-end" name="timing" value="end" checked>
+                <label for="timing-end">End of the month (cautious &mdash; recommended)</label>
+              </div>
+              <div class="radio-row">
+                <input type="radio" id="timing-begin" name="timing" value="begin">
+                <label for="timing-begin">Start of the month (earns one extra month of growth)</label>
+              </div>
+            </div>
+          </fieldset>
+        </fieldset>
+
+        <fieldset>
+          <legend>Spending it in retirement</legend>
+
+          <fieldset class="field">
+            <legend style="font-size:1rem;border:0;padding-bottom:0;margin-bottom:.2rem">
+              What do you want to work out?
+            </legend>
+            <div class="radio-group" role="radiogroup">
+              <div class="radio-row">
+                <input type="radio" id="mode-duration" name="withdrawalMode" value="duration" checked>
+                <label for="mode-duration">I know what I want to spend &mdash; how long will it last?</label>
+              </div>
+              <div class="radio-row">
+                <input type="radio" id="mode-amount" name="withdrawalMode" value="amount">
+                <label for="mode-amount">I know how long it must last &mdash; what can I spend?</label>
+              </div>
+            </div>
+          </fieldset>
+
+          <div class="field" id="field-targetWithdrawal">
+            <label for="targetAnnualWithdrawal">Amount you want to take out each year</label>
+            <span class="hint" id="targetAnnualWithdrawal-hint">In <strong>today&rsquo;s</strong>
+              dollars &mdash; what that money would buy now. We raise it with inflation
+              for you each year so it keeps buying the same amount.</span>
+            <div class="input-wrap">
+              <span class="input-affix prefix" aria-hidden="true">$</span>
+              <input type="number" id="targetAnnualWithdrawal" name="targetAnnualWithdrawal"
+                     value="30000" min="0" step="1000" inputmode="decimal"
+                     aria-describedby="targetAnnualWithdrawal-hint">
+            </div>
+          </div>
+
+          <div class="field" id="field-targetYears" hidden>
+            <label for="targetYears">Number of years the money must last</label>
+            <span class="hint" id="targetYears-hint">Counting from the day you retire.
+              Many planners use 30 years.</span>
+            <div class="input-wrap">
+              <input type="number" id="targetYears" name="targetYears" value="30"
+                     min="1" max="60" step="1" inputmode="numeric" class="with-suffix"
+                     aria-describedby="targetYears-hint">
+              <span class="input-affix suffix" aria-hidden="true">years</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="retirementReturn">Expected return each year, during retirement</label>
+            <span class="hint" id="retirementReturn-hint">Often lower than before
+              retirement, because savings are usually moved into safer investments.
+              Set it to the same number as above if you would rather not assume
+              that.</span>
+            <div class="input-wrap">
+              <input type="number" id="retirementReturn" name="retirementReturn" value="5"
+                     min="-50" max="30" step="0.5" inputmode="decimal" class="with-suffix"
+                     aria-describedby="retirementReturn-hint">
+              <span class="input-affix suffix" aria-hidden="true">%</span>
+            </div>
+          </div>
+        </fieldset>
+
+        <div class="form-actions no-print">
+          <button type="button" class="btn" id="resetBtn">Start over with the usual numbers</button>
+        </div>
+        <p class="card-note no-print" id="storageNote" style="margin-top:.75rem"></p>
+      </form>
+    </div>
+
+    <!-- ============================ RESULTS ============================ -->
+    <main id="results">
+
+      <section class="card" aria-labelledby="headline-heading">
+        <h2 id="headline-heading">What you could have when you retire</h2>
+
+        <div class="headline">
+          <div class="stat primary">
+            <p class="stat-label">In today&rsquo;s money &mdash; what it would actually buy</p>
+            <p class="stat-value" id="statReal">&mdash;</p>
+            <p class="stat-sub" id="statRealSub"></p>
+          </div>
+          <div class="stat">
+            <p class="stat-label">The headline number you would see on a statement</p>
+            <p class="stat-value" id="statNominal">&mdash;</p>
+            <p class="stat-sub" id="statNominalSub"></p>
+          </div>
+        </div>
+
+        <p class="plain-summary" id="liveSummary" aria-live="polite" aria-atomic="true">
+          Fill in your numbers on the left and your results will appear here.
+        </p>
+      </section>
+
+      <section class="card" aria-labelledby="split-heading">
+        <h2 id="split-heading">How much of that is money you put in, and how much is growth?</h2>
+        <p class="card-note">This is what compounding actually did for you. The longer
+          the money is invested, the bigger the orange piece gets.</p>
+
+        <div class="split-bar" id="splitBar" role="img" aria-labelledby="splitFigures"></div>
+        <p id="splitFigures"></p>
+        <div class="legend">
+          <span class="legend-item"><span class="legend-swatch" style="background:var(--series-put-in)"></span> Money you put in</span>
+          <span class="legend-item"><span class="legend-swatch" style="background:var(--series-growth)"></span> Growth on top</span>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="chart-heading">
+        <h2 id="chart-heading">Your balance, year by year</h2>
+        <p class="card-note" id="chartCaption"></p>
+        <div class="chart-wrap" id="chartAccumWrap">
+          <div class="chart-tooltip" id="chartAccumTip" role="status" hidden></div>
+        </div>
+        <div class="legend">
+          <span class="legend-item"><span class="legend-swatch" style="background:var(--series-put-in)"></span> Money you put in</span>
+          <span class="legend-item"><span class="legend-swatch" style="background:var(--series-growth)"></span> Growth on top</span>
+          <span class="legend-item"><span class="legend-swatch legend-dash"></span> What it would buy in today&rsquo;s money</span>
+        </div>
+        <p class="chart-help no-print">Move the pointer across the chart, or click it
+          and use the left and right arrow keys, to read any year. The same figures
+          are in the table further down.</p>
+      </section>
+
+      <section class="card" aria-labelledby="withdrawal-heading">
+        <h2 id="withdrawal-heading">Spending it in retirement</h2>
+        <div id="withdrawalVerdict"></div>
+        <div class="chart-wrap" id="chartDrawWrap">
+          <div class="chart-tooltip" id="chartDrawTip" role="status" hidden></div>
+        </div>
+        <p class="card-note" id="drawdownNote"></p>
+      </section>
+
+      <section class="card" aria-labelledby="sensitivity-heading">
+        <h2 id="sensitivity-heading">What if the return is different?</h2>
+        <p class="card-note">
+          <strong>A single return figure is a simplification, and this table is the
+          proof.</strong> Nobody can tell you what your investments will return.
+          Below is exactly the same savings plan, worked out at four different
+          assumptions. You put in the same money in every row &mdash; only the
+          guess changes. Treat the spread, not any one row, as the answer.
+        </p>
+        <div class="table-scroll">
+          <table>
+            <caption class="visually-hidden">Projected balance at retirement under four different return assumptions</caption>
+            <thead>
+              <tr>
+                <th scope="col">If the return is</th>
+                <th scope="col">Balance on the statement</th>
+                <th scope="col">In today&rsquo;s money</th>
+                <th scope="col">Of which is growth</th>
+              </tr>
+            </thead>
+            <tbody id="sensitivityBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="table-heading">
+        <h2 id="table-heading">Year-by-year table</h2>
+        <p class="card-note">Balances are at the end of each year. &ldquo;In today&rsquo;s
+          money&rdquo; divides by how much prices will have risen by then.</p>
+        <div class="table-scroll table-tall">
+          <table>
+            <caption class="visually-hidden">Year-by-year projection from today to retirement</caption>
+            <thead>
+              <tr>
+                <th scope="col">Age</th>
+                <th scope="col">Year</th>
+                <th scope="col">You put in (total)</th>
+                <th scope="col">Employer (total)</th>
+                <th scope="col">Growth</th>
+                <th scope="col">Balance</th>
+                <th scope="col">In today&rsquo;s money</th>
+              </tr>
+            </thead>
+            <tbody id="yearTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="assumptions-heading">
+        <h2 id="assumptions-heading">The assumptions behind these figures</h2>
+        <p class="card-note">Printed with your plan so you can see later what it was
+          based on.</p>
+        <dl class="assumptions" id="assumptionsList"></dl>
+        <p class="card-note" style="margin-top:1rem" id="methodNote"></p>
+      </section>
+
+      <section class="disclaimer print-only" aria-label="Disclaimer, repeated for print">
+        <h2>Remember</h2>
+        <p>These figures are an illustration produced by a free educational tool from
+          Numeraldo. They are not advice, not a prediction, and not a guarantee.
+          Investments can fall as well as rise.</p>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="page">
+    <p><strong>Numeraldo</strong> &mdash; numeracy for everyday money decisions.
+      This page does all its arithmetic on your own device. It sends nothing to
+      any server, needs no internet connection once it has loaded, and keeps no
+      record of you.</p>
+    <p>Educational use only. Not financial, tax, or legal advice.</p>
+  </div>
+</footer>
+
+<script src="assets/finance.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
